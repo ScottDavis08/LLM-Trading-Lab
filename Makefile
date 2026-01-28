@@ -1,37 +1,30 @@
 # Virtual environment setup
 venv:
-	python3 -m venv venv
-	@echo "Virtual environment created. Activate with: source venv/bin/activate"
+    python -m venv venv
+    @echo "Virtual environment created. Activate with: .\venv\Scripts\Activate.ps1 (PowerShell) or venv\Scripts\activate.bat (CMD)"
 
 # Install dependencies
 install:
-	pip install -r requirements.txt
+    pip install -r requirements.txt
 
 # Setup project (create venv and install dependencies)
-setup: venv activate
-	@echo "Activating virtual environment and installing dependencies..."
-	pip install -r requirements.txt
-	@echo "Setup complete! Activate the environment with: source venv/bin/activate"
-
-# Activate virtual environment (shows activation command)
-activate: 
-	@echo "To activate the virtual environment, run:"
-	@echo "source venv/bin/activate"
-	@echo ""
-	@echo "To deactivate later, simply run: deactivate"
+setup: venv
+    @echo "Installing dependencies..."
+    .\venv\Scripts\python.exe -m pip install -r requirements.txt
+    @echo "Setup complete! Activate with: .\venv\Scripts\Activate.ps1"
 
 # Run the trading script
-trade: activate
-	python trading_script.py $(ARGS)
+trade:
+    python "Experiments/chatgpt_micro-cap/scripts/processing/trading_script.py" --data-dir "Experiments/chatgpt_micro-cap/csv_files" $(ARGS)
 
-graph: activate
-	python "Start Your Own/Generate_Graph.py" $(ARGS) 
-
+# Generate graphs
+graph:
+    python "Start Your Own/Generate_Graph.py" $(ARGS)
 
 # Clean up virtual environment
 clean:
-	rm -rf venv
-	@echo "Virtual environment removed"
+    if exist venv rmdir /s /q venv
+    @echo "Virtual environment removed"
 
-.PHONY: venv install setup activate trade clean
+.PHONY: venv install setup trade graph clean
 
