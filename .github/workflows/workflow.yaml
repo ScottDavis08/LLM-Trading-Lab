@@ -1,10 +1,10 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 name: Auto Commit
 
-# on:
-#   workflow_dispatch:
-#   schedule:
-#     - cron: "30 23 * * 1-5"   # 5:30 PM CST Mon–Fri
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 21 * * 1-5"   # 4:30 PM EST Mon–Fri (TSX closes at 4pm EST)
 
 permissions:
   contents: write
@@ -18,10 +18,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: true   # allow pushing
+      
       - name: Set Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"  # Changed from 3.11 for better pandas compatibility
 
       - name: Install dependencies
         run: |
@@ -35,22 +36,23 @@ jobs:
           from datetime import datetime
           import pandas_market_calendars as mcal
 
-          nyse = mcal.get_calendar('NYSE')
+          # Use TSX calendar instead of NYSE
+          tsx = mcal.get_calendar('TSX')
           today = datetime.utcnow().date()
-          schedule = nyse.schedule(start_date=today, end_date=today)
+          schedule = tsx.schedule(start_date=today, end_date=today)
 
           if schedule.empty:
-              print("NYSE is closed today — holiday or weekend. Skipping workflow.")
+              print("TSX is closed today — holiday or weekend. Skipping workflow.")
               sys.exit(78)  # NEUTRAL EXIT CODE
           else:
               print("Market open — continuing workflow.")
           EOF
 
       - name: Process portfolio
-        run: python trading_script.py --data-dir "Scripts and CSV Files" --starting-equity 100 --skip
+        run: python "Experiments/chatgpt_micro-cap/scripts/processing/trading_script.py" --data-dir "Experiments/chatgpt_micro-cap/csv_files" --starting-equity 300 --skip --log-level INFO
 
       - name: Update Graph
-        run: python "Scripts and CSV Files/Generate Graph.py"
+        run: python "Start Your Own/Generate_Graph.py"
 
       - name: Commit and push
         run: |

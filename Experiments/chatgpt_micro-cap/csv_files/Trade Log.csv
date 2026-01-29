@@ -1,1 +1,2 @@
-Date,Ticker,Shares Bought,Buy Price,Cost Basis,PnL,Reason,Shares Sold,Sell Price
+Date,Ticker,Shares Bought,Buy Price,Cost Basis,PnL,Reason
+2026-01-28,WEB.V,80.0,1.95,156.0,0.0,MANUAL BUY LIMIT - Filled
