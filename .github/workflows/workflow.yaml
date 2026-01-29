@@ -36,7 +36,7 @@ jobs:
           from datetime import datetime
           import pandas_market_calendars as mcal
 
-          # Use TSX calendar instead of NYSE
+          # Use TSX calendar
           tsx = mcal.get_calendar('TSX')
           today = datetime.utcnow().date()
           schedule = tsx.schedule(start_date=today, end_date=today)
@@ -51,8 +51,8 @@ jobs:
       - name: Process portfolio
         run: python "Experiments/chatgpt_micro-cap/scripts/processing/trading_script.py" --data-dir "Experiments/chatgpt_micro-cap/csv_files" --starting-equity 300 --skip --log-level INFO
 
-      - name: Update Graph
-        run: python "Start Your Own/Generate_Graph.py"
+      # - name: Update Graph
+      #   run: python "2026-01/Generate_Graph.py"
 
       - name: Commit and push
         run: |
