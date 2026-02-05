@@ -460,14 +460,18 @@ def download_price_data(ticker: str, **kwargs: Any) -> FetchResult:
 # File path configuration
 # ------------------------------
 
+PROMPT_LOG_DIR = DATA_DIR / "gpt_prompts"
+
 def set_data_dir(data_dir: Path) -> None:
-    global DATA_DIR, PORTFOLIO_CSV_PATH, TRADE_LOG_CSV_PATH
+    global DATA_DIR, PORTFOLIO_CSV_PATH, TRADE_LOG_CSV_PATH, PROMPT_LOG_DIR
     logger.info("Setting data directory: %s", data_dir)
     DATA_DIR = Path(data_dir)
     logger.debug("Creating data directory if it doesn't exist: %s", DATA_DIR)
     os.makedirs(DATA_DIR, exist_ok=True)
-    PORTFOLIO_CSV_PATH = DATA_DIR /PORTFOLIO_CSV_FILE
+    PORTFOLIO_CSV_PATH = DATA_DIR / PORTFOLIO_CSV_FILE
     TRADE_LOG_CSV_PATH = DATA_DIR / TRADE_LOG_CSV_FILE
+    PROMPT_LOG_DIR = DATA_DIR / "gpt_prompts"
+    os.makedirs(PROMPT_LOG_DIR, exist_ok=True)  # Create prompts directory
     logger.info("Data directory configured - Portfolio CSV: %s, Trade Log CSV: %s", PORTFOLIO_CSV_PATH, TRADE_LOG_CSV_PATH)
 
 
@@ -1011,6 +1015,17 @@ def daily_results(chatgpt_portfolio: pd.DataFrame, cash: float) -> None:
     portfolio_dict: list[dict[Any, Any]] = chatgpt_portfolio.to_dict(orient="records")
     today = check_weekend()
 
+    # Create a StringIO buffer to capture all output
+    from io import StringIO
+    output_buffer = StringIO()
+    
+    # Helper function to print and capture
+    def print_and_log(*args, **kwargs):
+        """Print to console and capture to buffer."""
+        message = " ".join(str(arg) for arg in args)
+        print(message, **kwargs)
+        output_buffer.write(message + "\n")
+
     rows: list[list[str]] = []
     header = ["Ticker", "Close", "% Chg", "Volume"]
 
@@ -1046,18 +1061,21 @@ def daily_results(chatgpt_portfolio: pd.DataFrame, cash: float) -> None:
     # Use only TOTAL rows, sorted by date
     totals = chatgpt_df[chatgpt_df["Ticker"] == "TOTAL"].copy()
     if totals.empty:
-        print("\n" + "=" * 64)
-        print(f"Daily Results — {today}")
-        print("=" * 64)
-        print("\n[ Price & Volume ]")
+        print_and_log("\n" + "=" * 64)
+        print_and_log(f"Daily Results — {today}")
+        print_and_log("=" * 64)
+        print_and_log("\n[ Price & Volume ]")
         colw = [10, 12, 9, 15]
-        print(f"{header[0]:<{colw[0]}} {header[1]:>{colw[1]}} {header[2]:>{colw[2]}} {header[3]:>{colw[3]}}")
-        print("-" * sum(colw) + "-" * 3)
+        print_and_log(f"{header[0]:<{colw[0]}} {header[1]:>{colw[1]}} {header[2]:>{colw[2]}} {header[3]:>{colw[3]}}")
+        print_and_log("-" * sum(colw) + "-" * 3)
         for r in rows:
-            print(f"{str(r[0]):<{colw[0]}} {str(r[1]):>{colw[1]}} {str(r[2]):>{colw[2]}} {str(r[3]):>{colw[3]}}")
-        print("\n[ Portfolio Snapshot ]")
-        print(chatgpt_portfolio)
-        print(f"Cash balance: ${cash:,.2f}")
+            print_and_log(f"{str(r[0]):<{colw[0]}} {str(r[1]):>{colw[1]}} {str(r[2]):>{colw[2]}} {str(r[3]):>{colw[3]}}")
+        print_and_log("\n[ Portfolio Snapshot ]")
+        print_and_log(chatgpt_portfolio)
+        print_and_log(f"Cash balance: ${cash:,.2f}")
+        
+        # Save to file
+        _save_prompt_log(today, output_buffer.getvalue())
         return
 
     totals["Date"] = pd.to_datetime(totals["Date"], format="mixed", errors="coerce")  # tolerate ISO strings
@@ -1076,26 +1094,29 @@ def daily_results(chatgpt_portfolio: pd.DataFrame, cash: float) -> None:
     r = equity_series.pct_change().dropna()
     n_days = len(r)
     if n_days < 2:
-        print("\n" + "=" * 64)
-        print(f"Daily Results — {today}")
-        print("=" * 64)
-        print("\n[ Price & Volume ]")
+        print_and_log("\n" + "=" * 64)
+        print_and_log(f"Daily Results — {today}")
+        print_and_log("=" * 64)
+        print_and_log("\n[ Price & Volume ]")
         colw = [10, 12, 9, 15]
-        print(f"{header[0]:<{colw[0]}} {header[1]:>{colw[1]}} {header[2]:>{colw[2]}} {header[3]:>{colw[3]}}")
-        print("-" * sum(colw) + "-" * 3)
+        print_and_log(f"{header[0]:<{colw[0]}} {header[1]:>{colw[1]}} {header[2]:>{colw[2]}} {header[3]:>{colw[3]}}")
+        print_and_log("-" * sum(colw) + "-" * 3)
         for rrow in rows:
-            print(f"{str(rrow[0]):<{colw[0]}} {str(rrow[1]):>{colw[1]}} {str(rrow[2]):>{colw[2]}} {str(rrow[3]):>{colw[3]}}")
-        print("\n[ Portfolio Snapshot ]")
-        print(chatgpt_portfolio)
-        print(f"Cash balance: ${cash:,.2f}")
-        print(f"Latest ChatGPT Equity: ${final_equity:,.2f}")
+            print_and_log(f"{str(rrow[0]):<{colw[0]}} {str(rrow[1]):>{colw[1]}} {str(rrow[2]):>{colw[2]}} {str(rrow[3]):>{colw[3]}}")
+        print_and_log("\n[ Portfolio Snapshot ]")
+        print_and_log(chatgpt_portfolio)
+        print_and_log(f"Cash balance: ${cash:,.2f}")
+        print_and_log(f"Latest ChatGPT Equity: ${final_equity:,.2f}")
         if hasattr(mdd_date, "date") and not isinstance(mdd_date, (str, int)):
             mdd_date_str = mdd_date.date()
         elif hasattr(mdd_date, "strftime") and not isinstance(mdd_date, (str, int)):
             mdd_date_str = mdd_date.strftime("%Y-%m-%d")
         else:
             mdd_date_str = str(mdd_date)
-        print(f"Maximum Drawdown: {max_drawdown:.2%} (on {mdd_date_str})")
+        print_and_log(f"Maximum Drawdown: {max_drawdown:.2%} (on {mdd_date_str})")
+        
+        # Save to file
+        _save_prompt_log(today, output_buffer.getvalue())
         return
 
     # Risk-free config
@@ -1129,7 +1150,6 @@ def daily_results(chatgpt_portfolio: pd.DataFrame, cash: float) -> None:
     sortino_period = (period_return - rf_period) / (downside_std * np.sqrt(n_days)) if downside_std and downside_std > 0 else np.nan
     sortino_annual = ((mean_daily - rf_daily) / downside_std) * np.sqrt(252) if downside_std and downside_std > 0 else np.nan
 
-    # -------- CAPM: Beta & Alpha (vs ^GSPC) --------
     start_date = equity_series.index.min() - pd.Timedelta(days=1)
     end_date = equity_series.index.max() + pd.Timedelta(days=1)
 
@@ -1183,62 +1203,59 @@ def daily_results(chatgpt_portfolio: pd.DataFrame, cash: float) -> None:
         spx_value = (starting_equity / initial_price) * price_now if not np.isnan(starting_equity) else np.nan
 
     # -------- Pretty Printing --------
-    print("\n" + "=" * 64)
-    print(f"Daily Results — {today}")
-    print("=" * 64)
+    print_and_log("\n" + "=" * 64)
+    print_and_log(f"Daily Results — {today}")
+    print_and_log("=" * 64)
 
-    # Price & Volume table
-    print("\n[ Price & Volume ]")
+    print_and_log("\n[ Price & Volume ]")
     colw = [10, 12, 9, 15]
-    print(f"{header[0]:<{colw[0]}} {header[1]:>{colw[1]}} {header[2]:>{colw[2]}} {header[3]:>{colw[3]}}")
-    print("-" * sum(colw) + "-" * 3)
+    print_and_log(f"{header[0]:<{colw[0]}} {header[1]:>{colw[1]}} {header[2]:>{colw[2]}} {header[3]:>{colw[3]}}")
+    print_and_log("-" * sum(colw) + "-" * 3)
     for rrow in rows:
-        print(f"{str(rrow[0]):<{colw[0]}} {str(rrow[1]):>{colw[1]}} {str(rrow[2]):>{colw[2]}} {str(rrow[3]):>{colw[3]}}")
+        print_and_log(f"{str(rrow[0]):<{colw[0]}} {str(rrow[1]):>{colw[1]}} {str(rrow[2]):>{colw[2]}} {str(rrow[3]):>{colw[3]}}")
 
     # Performance metrics
     def fmt_or_na(x: float | int | None, fmt: str) -> str:
         return (fmt.format(x) if not (x is None or (isinstance(x, float) and np.isnan(x))) else "N/A")
 
-    print("\n[ Risk & Return ]")
+    print_and_log("\n[ Risk & Return ]")
     if hasattr(mdd_date, "date") and not isinstance(mdd_date, (str, int)):
         mdd_date_str = mdd_date.date()
     elif hasattr(mdd_date, "strftime") and not isinstance(mdd_date, (str, int)):
         mdd_date_str = mdd_date.strftime("%Y-%m-%d")
     else:
         mdd_date_str = str(mdd_date)
-    print(f"{'Max Drawdown:':32} {fmt_or_na(max_drawdown, '{:.2%}'):>15}   on {mdd_date_str}")
-    print(f"{'Sharpe Ratio (period):':32} {fmt_or_na(sharpe_period, '{:.4f}'):>15}")
-    print(f"{'Sharpe Ratio (annualized):':32} {fmt_or_na(sharpe_annual, '{:.4f}'):>15}")
-    print(f"{'Sortino Ratio (period):':32} {fmt_or_na(sortino_period, '{:.4f}'):>15}")
-    print(f"{'Sortino Ratio (annualized):':32} {fmt_or_na(sortino_annual, '{:.4f}'):>15}")
+    print_and_log(f"{'Max Drawdown:':32} {fmt_or_na(max_drawdown, '{:.2%}'):>15}   on {mdd_date_str}")
+    print_and_log(f"{'Sharpe Ratio (period):':32} {fmt_or_na(sharpe_period, '{:.4f}'):>15}")
+    print_and_log(f"{'Sharpe Ratio (annualized):':32} {fmt_or_na(sharpe_annual, '{:.4f}'):>15}")
+    print_and_log(f"{'Sortino Ratio (period):':32} {fmt_or_na(sortino_period, '{:.4f}'):>15}")
+    print_and_log(f"{'Sortino Ratio (annualized):':32} {fmt_or_na(sortino_annual, '{:.4f}'):>15}")
 
-    print("\n[ CAPM vs Benchmarks ]")
+    print_and_log("\n[ CAPM vs Benchmarks ]")
     if not np.isnan(beta):
-        print(f"{'Beta (daily) vs ^GSPC:':32} {beta:>15.4f}")
-        print(f"{'Alpha (annualized) vs ^GSPC:':32} {alpha_annual:>15.2%}")
-        print(f"{'R² (fit quality):':32} {r2:>15.3f}   {'Obs:':>6} {n_obs}")
+        print_and_log(f"{'Beta (daily) vs ^GSPC:':32} {beta:>15.4f}")
+        print_and_log(f"{'Alpha (annualized) vs ^GSPC:':32} {alpha_annual:>15.2%}")
+        print_and_log(f"{'R² (fit quality):':32} {r2:>15.3f}   {'Obs:':>6} {n_obs}")
         if n_obs < 60 or (not np.isnan(r2) and r2 < 0.20):
-            print("  Note: Short sample and/or low R² — alpha/beta may be unstable.")
+            print_and_log("  Note: Short sample and/or low R² — alpha/beta may be unstable.")
     else:
-        print("Beta/Alpha: insufficient overlapping data.")
+        print_and_log("Beta/Alpha: insufficient overlapping data.")
 
-    print("\n[ Snapshot ]")
-    print(f"{'Latest ChatGPT Equity:':32} ${final_equity:>14,.2f}")
+    print_and_log("\n[ Snapshot ]")
+    print_and_log(f"{'Latest ChatGPT Equity:':32} ${final_equity:>14,.2f}")
     if not np.isnan(spx_value):
         try:
-            print(f"{f'${starting_equity} in S&P 500 (same window):':32} ${spx_value:>14,.2f}")
+            print_and_log(f"{f'${starting_equity} in S&P 500 (same window):':32} ${spx_value:>14,.2f}")
         except Exception:
             pass
-    print(f"{'Cash Balance:':32} ${cash:>14,.2f}")
+    print_and_log(f"{'Cash Balance:':32} ${cash:>14,.2f}")
 
-    print("\n[ Holdings ]")
+    print_and_log("\n[ Holdings ]")
     new_portfolio_state, cash = load_latest_portfolio_state()
     new_portfolio_state = pd.DataFrame(new_portfolio_state)
-    print(new_portfolio_state)
+    print_and_log(new_portfolio_state)
     
-    # Add volume-based liquidity warnings (research: J.Financial Markets 2019)
-    # Micro-caps with <50% avg volume have 3x higher slippage
-    print("\n[ Liquidity Warnings ]")
+    print_and_log("\n[ Liquidity Warnings ]")
     warnings_found = False
     for row in rows:
         ticker_str = str(row[0])
@@ -1257,19 +1274,19 @@ def daily_results(chatgpt_portfolio: pd.DataFrame, cash: float) -> None:
                 if price_str != '—':
                     dollar_volume = current_vol * float(price_str)
                     if dollar_volume < 50000:
-                        print(f"  {ticker_str}: SEVERE liquidity - only ${dollar_volume:,.0f} traded today")
+                        print_and_log(f"  {ticker_str}: SEVERE liquidity - only ${dollar_volume:,.0f} traded today")
                         warnings_found = True
                     elif dollar_volume < 100000:
-                        print(f"  {ticker_str}: Low liquidity - ${dollar_volume:,.0f} traded today")
+                        print_and_log(f"  {ticker_str}: Low liquidity - ${dollar_volume:,.0f} traded today")
                         warnings_found = True
         except:
             pass
     
     if not warnings_found:
-        print("✓ No liquidity warnings")
+        print_and_log("✓ No liquidity warnings")
 
-    print("\n[ Your Instructions ]")
-    print(
+    print_and_log("\n[ Your Instructions ]")
+    print_and_log(
         "Use this info to make decisions regarding your portfolio. You have complete control over every decision. Make any changes you believe are beneficial—no approval required.\n"
         "Deep research is not permitted. Act at your discretion to achieve the best outcome.\n"
         "If you do not make a clear indication to change positions IMMEDIATELY after this message, the portfolio remains unchanged for tomorrow.\n"
@@ -1277,11 +1294,24 @@ def daily_results(chatgpt_portfolio: pd.DataFrame, cash: float) -> None:
         "\n"
         "*Paste everything above into ChatGPT*"
     )
+    
+    # Save the captured output to file
+    _save_prompt_log(today, output_buffer.getvalue())
 
 
-# ------------------------------
-# Orchestration
-# ------------------------------
+def _save_prompt_log(date_str: str, content: str) -> None:
+    """Save the daily prompt content to a text file."""
+    try:
+        log_file = PROMPT_LOG_DIR / f"{date_str}.txt"
+        logger.info("Writing prompt log file: %s", log_file)
+        with open(log_file, 'w', encoding='utf-8') as f:
+            f.write(content)
+        logger.info("Successfully wrote prompt log file: %s", log_file)
+        print(f"\n[Prompt saved to: {log_file}]")
+    except Exception as e:
+        logger.error("Failed to save prompt log: %s", e)
+        print(f"Warning: Could not save prompt log: {e}")
+
 
 def load_latest_portfolio_state(
     starting_equity_override: Optional[Union[str, float, Decimal]] = None,
