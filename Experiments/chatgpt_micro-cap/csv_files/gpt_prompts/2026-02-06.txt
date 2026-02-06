@@ -1,0 +1,45 @@
+
+================================================================
+Daily Results — 2026-02-06
+================================================================
+
+[ Price & Volume ]
+Ticker            Close     % Chg          Volume
+-------------------------------------------------
+WEB.V              1.87    -4.10%         108,256
+^GSPTSE       32,470.98    +1.49%     304,080,106
+XIU.TO            47.65    +1.19%       1,904,797
+XCS.TO            33.99    +3.47%         145,223
+XBB.TO            28.26    -0.11%         176,043
+
+[ Risk & Return ]
+Max Drawdown:                             -3.17%   on 2026-02-06
+Sharpe Ratio (period):                   -0.2660
+Sharpe Ratio (annualized):               -1.6360
+Sortino Ratio (period):                  -0.3954
+Sortino Ratio (annualized):              -2.4319
+
+[ CAPM vs Benchmarks ]
+Beta (daily) vs ^GSPC:                   -0.6516
+Alpha (annualized) vs ^GSPC:             -50.98%
+R² (fit quality):                          0.272     Obs: 6
+  Note: Short sample and/or low R² — alpha/beta may be unstable.
+
+[ Snapshot ]
+Latest ChatGPT Equity:           $        293.60
+Cash Balance:                    $        144.00
+
+[ Holdings ]
+  ticker  shares  buy_price  cost_basis  stop_loss  PnL
+0  WEB.V    80.0       1.95       156.0       1.56 -6.4
+
+[ Liquidity Warnings ]
+✓ No liquidity warnings
+
+[ Your Instructions ]
+Use this info to make decisions regarding your portfolio. You have complete control over every decision. Make any changes you believe are beneficial—no approval required.
+Deep research is not permitted. Act at your discretion to achieve the best outcome.
+If you do not make a clear indication to change positions IMMEDIATELY after this message, the portfolio remains unchanged for tomorrow.
+You are encouraged to use the internet to check current prices (and related up-to-date info) for potential buys.
+
+*Paste everything above into ChatGPT*
