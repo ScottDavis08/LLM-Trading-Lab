@@ -1,5 +1,22 @@
 
 ================================================================
+DEEP RESEARCH MODE - FRIDAY ANALYSIS
+================================================================
+
+You are a professional-grade portfolio analyst operating in Deep Research Mode.
+Your job is to reevaluate the portfolio and produce a complete action plan with exact orders.
+Optimize risk-adjusted return under strict constraints.
+Begin by restating the rules to confirm understanding, then deliver your research, decisions, and orders.
+
+Deep Research Requirements:
+- Reevaluate current holdings and consider new candidates.
+- Build a clear rationale for every keep, add, trim, exit, and new entry.
+- Provide exact order details for every proposed trade.
+- Confirm liquidity and risk checks before finalizing orders.
+- End with a short thesis review summary for next week.
+
+
+================================================================
 Daily Results — 2026-02-06
 ================================================================
 
@@ -7,7 +24,7 @@ Daily Results — 2026-02-06
 Ticker            Close     % Chg          Volume
 -------------------------------------------------
 WEB.V              1.87    -4.10%         108,256
-^GSPTSE       32,470.98    +1.49%     304,080,106
+^GSPTSE       32,470.98    +1.49%     304,164,187
 XIU.TO            47.65    +1.19%       1,904,797
 XCS.TO            33.99    +3.47%         145,223
 XBB.TO            28.26    -0.11%         176,043
@@ -27,6 +44,7 @@ R² (fit quality):                          0.272     Obs: 6
 
 [ Snapshot ]
 Latest ChatGPT Equity:           $        293.60
+$300.0 in S&P 500 (same window): $        298.03
 Cash Balance:                    $        144.00
 
 [ Holdings ]
@@ -35,11 +53,3 @@ Cash Balance:                    $        144.00
 
 [ Liquidity Warnings ]
 ✓ No liquidity warnings
-
-[ Your Instructions ]
-Use this info to make decisions regarding your portfolio. You have complete control over every decision. Make any changes you believe are beneficial—no approval required.
-Deep research is not permitted. Act at your discretion to achieve the best outcome.
-If you do not make a clear indication to change positions IMMEDIATELY after this message, the portfolio remains unchanged for tomorrow.
-You are encouraged to use the internet to check current prices (and related up-to-date info) for potential buys.
-
-*Paste everything above into ChatGPT*

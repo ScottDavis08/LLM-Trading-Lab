@@ -1014,6 +1014,7 @@ def daily_results(chatgpt_portfolio: pd.DataFrame, cash: float) -> None:
     """Print daily price updates and performance metrics (incl. CAPM)."""
     portfolio_dict: list[dict[Any, Any]] = chatgpt_portfolio.to_dict(orient="records")
     today = check_weekend()
+    today_dt = last_trading_date()  # Get as pd.Timestamp for weekday check
 
     # Create a StringIO buffer to capture all output
     from io import StringIO
@@ -1025,6 +1026,44 @@ def daily_results(chatgpt_portfolio: pd.DataFrame, cash: float) -> None:
         message = " ".join(str(arg) for arg in args)
         print(message, **kwargs)
         output_buffer.write(message + "\n")
+
+    # -------- INSTRUCTIONS HEADER (Friday = Deep Research, else = Standard) --------
+    is_friday = today_dt.weekday() == 4  # 0=Mon, 4=Fri
+    
+    if is_friday:
+        print_and_log("\n" + "=" * 64)
+        print_and_log("DEEP RESEARCH MODE - FRIDAY ANALYSIS")
+        print_and_log("=" * 64)
+        print_and_log()
+        print_and_log("You are a professional-grade portfolio analyst operating in Deep Research Mode.")
+        print_and_log("Your job is to reevaluate the portfolio and produce a complete action plan with exact orders.")
+        print_and_log("Optimize risk-adjusted return under strict constraints.")
+        print_and_log("Begin by restating the rules to confirm understanding, then deliver your research, decisions, and orders.")
+        print_and_log()
+        print_and_log("Deep Research Requirements:")
+        print_and_log("- Reevaluate current holdings and consider new candidates.")
+        print_and_log("- Build a clear rationale for every keep, add, trim, exit, and new entry.")
+        print_and_log("- Provide exact order details for every proposed trade.")
+        print_and_log("- Confirm liquidity and risk checks before finalizing orders.")
+        print_and_log("- End with a short thesis review summary for next week.")
+        print_and_log()
+    else:
+        print_and_log("\n" + "=" * 64)
+        print_and_log("DAILY TRADING INSTRUCTIONS")
+        print_and_log("=" * 64)
+        print_and_log()
+        print_and_log("Use this info to make decisions regarding your portfolio.")
+        print_and_log("You have complete control over every decision.")
+        print_and_log("Make any changes you believe are beneficial—no approval required.")
+        print_and_log()
+        print_and_log("Deep research is not permitted on weekdays.")
+        print_and_log("Act at your discretion to achieve the best outcome.")
+        print_and_log("If you do not make a clear indication to change positions IMMEDIATELY after this message,")
+        print_and_log("the portfolio remains unchanged for tomorrow.")
+        print_and_log()
+        print_and_log("You are encouraged to use the internet to check current prices")
+        print_and_log("(and related up-to-date info) for potential buys.")
+        print_and_log()
 
     rows: list[list[str]] = []
     header = ["Ticker", "Close", "% Chg", "Volume"]
@@ -1199,7 +1238,7 @@ def daily_results(chatgpt_portfolio: pd.DataFrame, cash: float) -> None:
         try:
             starting_equity = float(input("what was your starting equity? "))
         except Exception:
-            print("Invalid input for starting equity. Defaulting to NaN.")
+            print_and_log("Invalid input for starting equity. Defaulting to NaN.")
         spx_value = (starting_equity / initial_price) * price_now if not np.isnan(starting_equity) else np.nan
 
     # -------- Pretty Printing --------
@@ -1285,16 +1324,6 @@ def daily_results(chatgpt_portfolio: pd.DataFrame, cash: float) -> None:
     if not warnings_found:
         print_and_log("✓ No liquidity warnings")
 
-    print_and_log("\n[ Your Instructions ]")
-    print_and_log(
-        "Use this info to make decisions regarding your portfolio. You have complete control over every decision. Make any changes you believe are beneficial—no approval required.\n"
-        "Deep research is not permitted. Act at your discretion to achieve the best outcome.\n"
-        "If you do not make a clear indication to change positions IMMEDIATELY after this message, the portfolio remains unchanged for tomorrow.\n"
-        "You are encouraged to use the internet to check current prices (and related up-to-date info) for potential buys.\n"
-        "\n"
-        "*Paste everything above into ChatGPT*"
-    )
-    
     # Save the captured output to file
     _save_prompt_log(today, output_buffer.getvalue())
 
