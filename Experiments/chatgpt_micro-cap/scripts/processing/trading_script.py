@@ -1399,8 +1399,29 @@ def load_latest_portfolio_state(
 
     latest_date = non_total["Date"].max()
     latest_tickers = non_total[non_total["Date"] == latest_date].copy()
+    
+    # Filter out SELL actions from Daily Updates
     sold_mask = latest_tickers["Action"].astype(str).str.startswith("SELL")
     latest_tickers = latest_tickers[~sold_mask].copy()
+    
+    # ALSO check Trade Log for recent sells (catch manual sells not yet in Daily Updates)
+    if TRADE_LOG_CSV_PATH.exists():
+        logger.info("Checking Trade Log for recent sells: %s", TRADE_LOG_CSV_PATH)
+        trade_log = pd.read_csv(TRADE_LOG_CSV_PATH)
+        if not trade_log.empty:
+            trade_log["Date"] = pd.to_datetime(trade_log["Date"], format="mixed", errors="coerce")
+            # Get sells from the last 2 days to be safe
+            recent_cutoff = latest_date - pd.Timedelta(days=2)
+            recent_sells = trade_log[
+                (trade_log["Date"] >= recent_cutoff) & 
+                (trade_log["Shares Sold"].notna())
+            ]
+            sold_tickers = set(recent_sells["Ticker"].str.upper())
+            
+            if sold_tickers:
+                logger.info("Excluding recently sold tickers: %s", sold_tickers)
+                latest_tickers = latest_tickers[~latest_tickers["Ticker"].str.upper().isin(sold_tickers)]
+    
     latest_tickers.drop(
         columns=[
             "Date",
