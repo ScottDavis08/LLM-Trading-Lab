@@ -1,0 +1,55 @@
+
+================================================================
+DEEP RESEARCH MODE - FRIDAY ANALYSIS
+================================================================
+
+You are a professional-grade portfolio analyst operating in Deep Research Mode.
+Your job is to reevaluate the portfolio and produce a complete action plan with exact orders.
+Optimize risk-adjusted return under strict constraints.
+Begin by restating the rules to confirm understanding, then deliver your research, decisions, and orders.
+
+Deep Research Requirements:
+- Reevaluate current holdings and consider new candidates.
+- Build a clear rationale for every keep, add, trim, exit, and new entry.
+- Provide exact order details for every proposed trade.
+- Confirm liquidity and risk checks before finalizing orders.
+- End with a short thesis review summary for next week.
+
+Invalid input for starting equity. Defaulting to NaN.
+
+================================================================
+Daily Results — 2026-02-27
+================================================================
+
+[ Price & Volume ]
+Ticker            Close     % Chg          Volume
+-------------------------------------------------
+^GSPTSE       34,339.99    -0.47%     495,405,988
+XIU.TO            49.71    -0.64%       3,945,532
+XCS.TO            37.52    +0.64%          31,400
+XBB.TO            28.59    +0.07%         163,855
+
+[ Risk & Return ]
+Max Drawdown:                             -3.17%   on 2026-02-06
+Sharpe Ratio (period):                   -0.1887
+Sharpe Ratio (annualized):               -0.6140
+Sortino Ratio (period):                  -0.2677
+Sortino Ratio (annualized):              -0.8713
+
+[ CAPM vs Benchmarks ]
+Beta (daily) vs ^GSPC:                   -0.2911
+Alpha (annualized) vs ^GSPC:             -14.30%
+R² (fit quality):                          0.106     Obs: 20
+  Note: Short sample and/or low R² — alpha/beta may be unstable.
+
+[ Snapshot ]
+Latest ChatGPT Equity:           $        295.20
+Cash Balance:                    $        295.20
+
+[ Holdings ]
+Empty DataFrame
+Columns: []
+Index: []
+
+[ Liquidity Warnings ]
+✓ No liquidity warnings
