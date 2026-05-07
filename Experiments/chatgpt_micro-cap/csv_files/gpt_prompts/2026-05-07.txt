@@ -1,0 +1,55 @@
+
+================================================================
+DAILY TRADING INSTRUCTIONS
+================================================================
+
+Use this info to make decisions regarding your portfolio.
+You have complete control over every decision.
+Make any changes you believe are beneficial—no approval required.
+
+Deep research is not permitted on weekdays.
+Act at your discretion to achieve the best outcome.
+If you do not make a clear indication to change positions IMMEDIATELY after this message,
+the portfolio remains unchanged for tomorrow.
+
+You are encouraged to use the internet to check current prices
+(and related up-to-date info) for potential buys.
+
+Invalid input for starting equity. Defaulting to NaN.
+
+================================================================
+Daily Results — 2026-05-07
+================================================================
+
+[ Price & Volume ]
+Ticker            Close     % Chg          Volume
+-------------------------------------------------
+^GSPTSE       33,856.62    -0.37%     324,763,982
+XIU.TO            49.73    -0.52%       5,431,025
+XCS.TO            36.93    +0.05%          16,020
+XBB.TO            27.98    -0.11%         170,056
+
+[ Risk & Return ]
+Max Drawdown:                             -3.17%   on 2026-02-06
+Sharpe Ratio (period):                   -0.4538
+Sharpe Ratio (annualized):               -0.8390
+Sortino Ratio (period):                  -0.6315
+Sortino Ratio (annualized):              -1.1676
+
+[ CAPM vs Benchmarks ]
+Beta (daily) vs ^GSPC:                   -0.0616
+Alpha (annualized) vs ^GSPC:              -4.30%
+R² (fit quality):                          0.022     Obs: 68
+  Note: Short sample and/or low R² — alpha/beta may be unstable.
+
+[ Snapshot ]
+Latest ChatGPT Equity:           $        295.20
+Cash Balance:                    $        295.20
+
+[ Holdings ]
+Empty DataFrame
+Columns: []
+Index: []
+
+[ Liquidity Warnings ]
+✓ No liquidity warnings
